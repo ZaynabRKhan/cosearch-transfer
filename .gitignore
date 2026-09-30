@@ -1,0 +1,8 @@
+bo-cosearch/
+
+__pycache__/
+*.py[cod]
+
+paper_results/
+
+.ipynb_checkpoints/

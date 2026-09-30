@@ -1,0 +1,19 @@
+{
+    "max_chiplet": 6,
+    "sys_array": ["64x64"],
+    "tech_nodes": ["7"],
+    "sram_buf_sizes": {
+      "64x64": [256]
+    },
+    "pkg": {
+      "inter_pkg_architecture": [
+        "3d_tsv"
+      ],
+      "protocol": [
+        "ucie_3d"
+      ],
+      "mem_pkg_architecture": [
+        "ddr4"
+      ]
+  }
+}
