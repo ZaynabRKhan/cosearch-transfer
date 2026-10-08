@@ -34,7 +34,6 @@ from system.utils.SimulationCache import SimulationCache
 from config import print_info, fast_test, latency_en, \
                     sram_selection_mode
 
-
 #########
 #Freq config read
 with open('cfg/parameters/freq_scale.json', 'r') as f:
@@ -48,13 +47,30 @@ scaling_factors = {int(k): v for k, v in freq_config['freq_scaling_factors'].ite
 
 ######
 ## Workload 
-with open("cfg/examples/workload.json") as f:
-    workload = json.load(f)
-GEMM_SHAPE = {int(k): v for k, v in workload.items()}
-shape = [512, 768, 3072] #workload 1 fixed
-GEMM_M = shape[0]
-GEMM_K = shape[1]
-GEMM_N = shape[2]
+# with open("cfg/examples/workload.json") as f:
+#     workload = json.load(f)
+# GEMM_SHAPE = {int(k): v for k, v in workload.items()}
+# shape = [512, 768, 3072] #workload 1 fixed
+# GEMM_M = shape[0]
+# GEMM_K = shape[1]
+# GEMM_N = shape[2]
+
+# with open("cfg/examples/workload_cnn.json") as f:
+#     workload = json.load(f)
+# shape = workload["1"]
+# GEMM_M = shape[0]
+# GEMM_K = shape[1]
+# GEMM_N = shape[2]
+
+def set_workload(wl_name:str, wl_id:str):
+    global GEMM_M, GEMM_K, GEMM_N
+    with open(f"cfg/examples/{wl_name}.json") as f:
+        workload = json.load(f)
+    shape = workload[str(wl_id)]
+    GEMM_M = shape[0]
+    GEMM_K = shape[1]
+    GEMM_N = shape[2]
+
 ######
 
 
@@ -109,7 +125,6 @@ class SystemGenerator:
                 final_system.update(chiplets_dict)
                 final_system["pkg"] = package_dict
                 final_system["WL_mapping"] = {"mapping": mapping_details}
-                
                 #Update connections for 2.5d grid topology 
                 final_system_size, final_system_info = calc_HI_dimension(final_system)
                 final_connections = find_connections(final_system_info)
@@ -516,7 +531,10 @@ def sim_annealing(wl_idx, cache_file, run_name, cost_profile, initial_temp=4000,
     
     print("\n[INFO] --- Working on calculating cost ---") if print_info else None
     
-    
+    print("cost_average/cost_avg:")
+    print(cost_avg)
+    print("system_dict/cur_architecture:")
+    print(cur_architecture)
     cost_val, norm_cost_dict, raw_cost_dict = calculate_cost(
         profile_name=cost_profile,
         cost_avgerage=cost_avg,
@@ -696,7 +714,6 @@ def sim_annealing(wl_idx, cache_file, run_name, cost_profile, initial_temp=4000,
     return best_cost, best_architecture, result_df, sim_data_csv_results    
 
 ##########################################
-
 
 
 if __name__ == "__main__":

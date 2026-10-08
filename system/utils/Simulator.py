@@ -36,11 +36,33 @@ class Simulator:
             "OfmapOffset:    20000000",
             f"Bandwidth : {int(sa.dram_bandwidth)}",
             f"Dataflow : {sa.data_flow}",
-            "MemoryBanks:    1"
+            "MemoryBanks:    1",
+            "ReadRequestBuffer: 32", #addition
+            "WriteRequestBuffer: 32" #addition
         ]
         run_presets = [
             "[run_presets]",
-            f"InterfaceBandwidth: {self.mode}"
+            f"InterfaceBandwidth: {self.mode}",
+            "UseRamulatorTrace: False" #addition
+        ]
+        layout = [ #all added
+            "[layout]",
+            "IfmapCustomLayout: False",
+            "IfmapSRAMBankBandwidth: 10",
+            "IfmapSRAMBankNum: 10",
+            "IfmapSRAMBankPort: 2",
+            "FilterCustomLayout: False",
+            "FilterSRAMBankBandwidth: 10",
+            "FilterSRAMBankNum: 10",
+            "FilterSRAMBankPort: 2"
+        ]
+        sparsity = [ #all added
+            "[sparsity]",
+            "SparsitySupport: False",
+            "SparseRep: ellpack_block",
+            "OptimizedMapping: False",
+            "BlockSize: 8",
+            "RandomNumberGeneratorSeed: 40"
         ]
 
         # Combine all lines with appropriate spacing
@@ -49,6 +71,10 @@ class Simulator:
         lines.append('')  # Empty line between sections
         lines.extend(architecture_presets)
         lines.append('')  # Empty line between sections
+        lines.extend(layout) # added start
+        lines.append('')
+        lines.extend(sparsity)
+        lines.append('') # added end
         lines.extend(run_presets)
         
         # Write to file
@@ -122,11 +148,12 @@ class Simulator:
             print(f"Core[{core.id}]: {core.width}x{core.height} has no assigned workload, NO simulation performed")
             return 0
         workload_path, workload_file = workload_return 
-        
         config_path, config_name = self.write_config_file(core)
+        layout_path = "vit_l_KM_KN.csv"
         # sim_folder = os.path.join(self.home_dir, config_name)
         s = scalesim(config=config_path, 
                      topology=workload_path, 
+                     layout=layout_path,
                      input_type_gemm=True,
                      verbose=False,
                      save_disk_space=True)

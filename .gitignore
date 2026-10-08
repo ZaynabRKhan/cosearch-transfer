@@ -6,3 +6,9 @@ __pycache__/
 paper_results/
 
 .ipynb_checkpoints/
+
+bayes_opt_runs/
+
+bayes_opt_try/
+
+vit_l_KM_KN.csv

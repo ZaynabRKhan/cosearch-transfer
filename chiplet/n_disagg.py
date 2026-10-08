@@ -94,34 +94,35 @@ def _validate_protocols(protocol_3d, protocol_2_5d, inter_conn):
 
 #Code v2 - with stacking rules 
 class ChipletGenerator:
-    def __init__(self, num_chiplets, sys_array, tech_node, sram_buf, area_power_func, sram_area_energy_func):
-        # self.max_chiplets, self.sys_array_options, self.tech_node_options, self.sram_buf_options, self.get_area_power, self.get_sram_area_energy = max_chiplets, sys_array_options, tech_node_options,  sram_buf_options, area_power_func, sram_area_energy_func
-        self.num_chiplets, self.sys_array, self.tech_node, self.sram_buf, self.get_area_power, self.get_sram_area_energy = num_chiplets, sys_array, tech_node, sram_buf, area_power_func, sram_area_energy_func
+    def __init__(self, max_chiplets, sys_array_options, tech_node_options,  sram_buf_options, area_power_func, sram_area_energy_func):
+        self.max_chiplets, self.sys_array_options, self.tech_node_options, self.sram_buf_options, self.get_area_power, self.get_sram_area_energy = max_chiplets, sys_array_options, tech_node_options,  sram_buf_options, area_power_func, sram_area_energy_func
+        # self.num_chiplets, self.sys_array, self.tech_node, self.sram_buf, self.get_area_power, self.get_sram_area_energy = num_chiplets, sys_array, tech_node, sram_buf, area_power_func, sram_area_energy_func
 
     def generate(self):
         # num_chiplets = random.randint(1, self.max_chiplets)
         chiplets_dict = {}
 
         # cg_single_sys_array_size = random.choice(self.sys_array_options) #Used for Chiplet Gym mode only
-        for i in range(1, self.num_chiplets + 1):
-            # chiplet_name, selected_sys_array = f"Chiplet_{i}", random.choice(self.sys_array_options)
-            # selected_tech_node = random.choice(self.tech_node_options)
+        for i in range(1, self.max_chiplets + 1): #changed to num_chiplets from max_chiplets
+            chiplet_name, selected_sys_array = f"Chiplet_{i}", random.choice(self.sys_array_options)
+            selected_tech_node = random.choice(self.tech_node_options)
             # Select a valid SRAM buffer size for the chosen sys_array
-            # valid_sram_sizes = self.sram_buf_options.get(selected_sys_array, [256]) # Default if key is missing
-            # if sram_selection_mode == "random":
-                # sram_buf = random.choice(valid_sram_sizes)
-            # else: # sram_selection_mode is "max"
+            valid_sram_sizes = self.sram_buf_options.get(selected_sys_array, [256]) # Default if key is missing
+            if sram_selection_mode == "random":
+                sram_buf = random.choice(valid_sram_sizes)
+            else: # sram_selection_mode is "max"
                 # Select the largest SRAM buffer size
-                # sram_buf = max(valid_sram_sizes) if valid_sram_sizes else 256
+                sram_buf = max(valid_sram_sizes) if valid_sram_sizes else 256
 
-            chiplet_name, selected_sys_array = f"Chiplet_{i}", self.sys_array[0]
-            selected_tech_node = self.tech_node[0]
+            # chiplet_name, selected_sys_array = f"Chiplet_{i}", self.sys_array[0]
+            # selected_tech_node = self.tech_node[0]
             # valid_sram_sizes = self.sram_buf_options.get(selected_sys_array, [256])
-            valid_sram_sizes = self.sram_buf[selected_sys_array]
-            if len(valid_sram_sizes) == 0:
-                print("Invalid sram option for the given configuration.")
-                return {}
-            sram_buf = valid_sram_sizes[0]
+            # valid_sram_sizes = self.sram_buf[selected_sys_array]
+            # if len(valid_sram_sizes) == 0:
+            #     print("Invalid sram option for the given configuration.")
+            #     return {}
+            # sram_buf = valid_sram_sizes[0]
+
             sram_area,_ = self.get_sram_area_energy(sram_buf,selected_tech_node)
             logic_area, power = self.get_area_power(selected_sys_array,selected_tech_node)
             area = logic_area + sram_area
@@ -168,20 +169,20 @@ class PackageGenerator:
             return None # No valid stack could be formed
 
     def _determine_hi_pkg_type(self, hi_pkg_type):
-        if self.num_chiplets == 1 and hi_pkg_type != "2d":
-            raise Exception("Invalid package type")
-        elif self.num_chiplets == 2 and hi_pkg_type not in ["2.5d", "3d"]:
-            raise Exception("Invalid package type")
-        elif self.num_chiplets == 3 and hi_pkg_type not in ["2.5d", "3d", "2.5d_3d"]:
-            raise Exception("Invalid package type")
-        return hi_pkg_type
+        # if self.num_chiplets == 1 and hi_pkg_type != "2d":
+        #     raise Exception("Invalid package type")
+        # elif self.num_chiplets == 2 and hi_pkg_type not in ["2.5d", "3d"]:
+        #     raise Exception("Invalid package type")
+        # elif self.num_chiplets == 3 and hi_pkg_type not in ["2.5d", "3d", "2.5d_3d"]:
+        #     raise Exception("Invalid package type")
+        # return hi_pkg_type
 
-        # if self.num_chiplets == 1:
-        #     return "2d"
-        # elif self.num_chiplets == 2:
-        #     return random.choice(["2.5d", "3d"])
-        # else: # 3 or more
-        #     return random.choice(["2.5d", "3d", "2.5d_3d"])
+        if self.num_chiplets == 1:
+            return "2d"
+        elif self.num_chiplets == 2:
+            return random.choice(["2.5d", "3d"])
+        else: # 3 or more
+            return random.choice(["2.5d", "3d", "2.5d_3d"])
     
     def _determine_mem_pkg_type(self):
         ddr_options = [m for m in self.mem_pkg_options if 'ddr' in m.lower()]
